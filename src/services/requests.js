@@ -40,6 +40,8 @@ const fetchIds = async (offset, params) => {
 }
 
 const fetchFilteredIds = async (filter) => {
+    const start = Date.now()
+    const requestsArr = [];
     const idsMap = new Map();
     for (let entry of filter) {
         const body = JSON.stringify(
@@ -50,17 +52,27 @@ const fetchFilteredIds = async (filter) => {
                 }
             }
         );
-        const ids = await request(body);
+        const ids = request(body)
+            .then(ids => {
+                console.log(entry[0], "iteration starts")
+                ids.forEach(item => {
+                    if (!idsMap.has(item)) {
+                        idsMap.set(item, 1);
+                    } else {
+                        idsMap.set(item, idsMap.get(item)+1);
+                    }
+                });
+                console.log(entry[0], "iteration stops")
+            });
+        requestsArr.push(ids);
         console.log("wait")
-        ids.forEach(item => {
-            if (!idsMap.has(item)) {
-                idsMap.set(item, 1);
-            } else {
-                idsMap.set(item, idsMap.get(item)+1);
-            }
-        });
     }
-
+    
+    
+    console.log("wait all")
+    await Promise.all(requestsArr);
+    const end = Date.now() - start
+    console.log("continue", end)
     const arrIds = [];
     idsMap.forEach((value, key) => {
         if (value === filter.size) arrIds.push(key)
