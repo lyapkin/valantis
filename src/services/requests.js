@@ -1,96 +1,91 @@
 import { getAuth } from '../util';
 
-const LIMIT = 50;
 
-
-export const fetchData = async (offset, filter) => {
-    const params = new Map();
+// export const fetchData = async (offset, filter) => {
+//     const params = new Map();
     
-    if (filter.brand.trim().length > 0) {
-        params.set("brand", filter.brand.trim())
-    }
-    if (filter.price > 0) {
-        params.set("price", filter.price)
-    }
-    if (filter.product.trim().length > 0) {
-        params.set("product", filter.product.trim())
-    }
+//     if (filter.brand.trim().length > 0) {
+//         params.set("brand", filter.brand.trim())
+//     }
+//     if (filter.price > 0) {
+//         params.set("price", filter.price)
+//     }
+//     if (filter.product.trim().length > 0) {
+//         params.set("product", filter.product.trim())
+//     }
 
-    const resultIds = await fetchIds(offset, params);
-    const ids = resultIds;
-    const resultItems = await fetchItems(ids);
-    return resultItems;
-}
+//     let ids = params.size > 0 ?
+//               await fetchFilteredIds(params) :
+//               Array.from(await fetchIds(offset, LIMIT));
+//     return await fetchItems(Array.from(ids));
+// }
 
-const fetchIds = async (offset, params) => {
-    if (params.size > 0) {
-        return await fetchFilteredIds(params);
-    } else {
-        const body = JSON.stringify(
-            {
-                action: "get_ids",
-                params: {
-                    offset: offset * LIMIT,
-                    limit: LIMIT
-                }
-            }
-        );
-        return await request(body);
-    }
-}
-
-const fetchFilteredIds = async (filter) => {
-    const start = Date.now()
-    const requestsArr = [];
-    const idsMap = new Map();
-    for (let entry of filter) {
-        const body = JSON.stringify(
-            {
-                action: "filter",
-                params: {
-                    [entry[0]]: entry[1]
-                }
-            }
-        );
-        const ids = request(body)
-            .then(ids => {
-                console.log(entry[0], "iteration starts")
-                ids.forEach(item => {
-                    if (!idsMap.has(item)) {
-                        idsMap.set(item, 1);
-                    } else {
-                        idsMap.set(item, idsMap.get(item)+1);
-                    }
-                });
-                console.log(entry[0], "iteration stops")
-            });
-        requestsArr.push(ids);
-        console.log("wait")
-    }
+// const fetchIds = async (offset, limit) => {
+//     const body = JSON.stringify(
+//         {
+//             action: "get_ids",
+//             params: {
+//                 offset: offset * limit,
+//                 limit: limit
+//             }
+//         }
+//     );
+//     let ids = new Set(await toRequest(body));
     
+//     if (ids.size < limit) {
+//         // collect differences
+//         (await fetchIds(offset + ids.size + 1, limit - ids.size))
+//             .forEach(item => {
+//                 ids.add(item);
+//             });
+//     }
+//     return ids;
+// }
+
+// const fetchFilteredIds = async (filter) => {
+//     const requestsArr = [];
+//     const idsMap = new Map();
+//     filter.forEach((value, key) => {
+//         const body = JSON.stringify(
+//             {
+//                 action: "filter",
+//                 params: {
+//                     [key]: value
+//                 }
+//             }
+//         );
+//         const ids = toRequest(body)
+//             .then(ids => {
+//                 ids.forEach(item => {
+//                     if (!idsMap.has(item)) {
+//                         idsMap.set(item, 1);
+//                     } else {
+//                         idsMap.set(item, idsMap.get(item)+1);
+//                     }
+//                 });
+//             });
+//         requestsArr.push(ids);
+//     })
     
-    console.log("wait all")
-    await Promise.all(requestsArr);
-    const end = Date.now() - start
-    console.log("continue", end)
-    const arrIds = [];
-    idsMap.forEach((value, key) => {
-        if (value === filter.size) arrIds.push(key)
-    });
-    return arrIds;
-}
+//     await Promise.all(requestsArr);
+//     const arrIds = [];
+//     idsMap.forEach((value, key) => {
+//         if (value === filter.size) arrIds.push(key)
+//     });
+//     return arrIds;
+// }
 
-const fetchItems = async (ids) => {
-    const body = JSON.stringify(
-        {
-            action: "get_items",
-            params: { ids }
-        }
-    );
-    return await request(body);
-}
+// const fetchItems = async (ids) => {
+//     const body = JSON.stringify(
+//         {
+//             action: "get_items",
+//             params: { ids }
+//         }
+//     );
+//     return await toRequest(body);
+// }
 
-const request = async body => {
+export const toRequest = async body => {
     const response = await fetch("http://api.valantis.store:40000/", {
         headers: {
             "X-Auth": getAuth(),
@@ -103,5 +98,5 @@ const request = async body => {
         return (await response.json()).result;
     }
     console.log(response.status)
-    return await request(body);
+    return await toRequest(body);
 }

@@ -1,6 +1,7 @@
 import React from 'react'
+import { FILTER } from './reducers/requestParamsReducer';
 
-const Filter = ({filter, setFilter}) => {
+const Filter = ({filter, dispatch}) => {
 
     const handleClick = (e) => {
         e.preventDefault()
@@ -10,8 +11,8 @@ const Filter = ({filter, setFilter}) => {
         const product = form.elements.product.value;
         const price = Number(form.elements.price.value);
         const brand = form.elements.brand.value;
-
-        setFilter({product, price, brand})
+        
+        dispatch({type: FILTER, payload: {product, price, brand}})
     }
 
     return (

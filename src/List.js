@@ -1,31 +1,37 @@
 import React, { useEffect, useState } from 'react'
-import { fetchData } from './services/requests';
 import Filter from './Filter';
 import Pagination from './Pagination';
 import useProductList from './hooks/useProductList';
+import { useRequestData } from './hooks/useRequestParams';
 
 const List = () => {
-    const [productList, setProductList] = useProductList([]);
-    const [filter, setFilter] = useState({
-        product: "",
-        price: null,
-        brand: ""
-    })
-    const [offset, setOffset] = useState(0);
+    const [page, filter, dispatch, fetchData] = useRequestData();
+    const [productList, setProductList] = useProductList();
+    
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        fetchData(offset, filter)
-            .then(result => setProductList(result));
-    }, [offset, filter])
+        let ignore = false;
+        setLoading(true);
+        fetchData()
+            .then(result => {
+                if (ignore) return;
+
+                setProductList(result);
+                setLoading(false);
+            });
+
+        return () => ignore = true;
+    }, [page, filter]);
     
 
     return (
         <div>
-            <Filter filter={filter} setFilter={setFilter} />
+            <Filter filter={filter} dispatch={dispatch} />
             <ol>
-                {productList}
+                {loading ?  "Loading..." : productList}
             </ol>
-            <Pagination page={offset+1} setOffset={setOffset} />
+            <Pagination page={page} dispatch={dispatch} />
         </div>
     )
 }
