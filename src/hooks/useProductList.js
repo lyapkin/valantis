@@ -1,11 +1,11 @@
 import { useState } from "react";
+import { toRequest } from "../services/requests";
 
 
 const useProductList = () => {
-    const [productList, dispatch] = useState([]);    
+    const [productList, setProductList] = useState([]);    
 
     const outputList = productList
-        // .slice(page*LIMIT, page*LIMIT+LIMIT)
         .map(item => (<li key={item.id}>
                         <span>id: {item.id}; </span>
                         <span>product: {item.product}; </span>
@@ -14,7 +14,25 @@ const useProductList = () => {
                       </li>)
         );
 
-    return [outputList, dispatch];
+        // const fetchItems = async (ids) => {
+        //     const body = JSON.stringify(
+        //         {
+        //             action: "get_items",
+        //             params: { ids }
+        //         }
+        //     );
+
+        //     const set = new Set();
+        //     const items = (await toRequest(body)).filter(item => {
+        //         if (set.has(item.id)) return false;
+        //         set.add(item.id);
+        //         return true;
+        //     });
+
+        //     setProductList(items);
+        // }
+
+    return [outputList, setProductList];
 }
 
 export default useProductList;

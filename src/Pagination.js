@@ -17,13 +17,10 @@ const Pagination = ({page, dispatch}) => {
         }
     }
     return (
-        <div onClick={handleClick}>
-            {
-            page > 1 ? 
-                <button data-action="prev">Пред.</button> :
-                null
-            }
-            <span>{page}</span>
+        <div onClick={handleClick} className='pagination'>
+            <span>Страница: {page}</span>
+
+            <button data-action="prev" disabled={page <= 1}>Пред.</button> 
             <button data-action="next">След.</button>
         </div>
     )

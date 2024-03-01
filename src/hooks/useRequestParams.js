@@ -1,12 +1,18 @@
-import { useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import requestParamsReducer, { CHANGE_OFFSET_ERROR, requestParamsInitState } from "../reducers/requestParamsReducer";
 import { LIMIT } from "../const";
 import { toRequest } from "../services/requests";
 
 export const useRequestData = () => {
     const [params, dispatch] = useReducer(requestParamsReducer, requestParamsInitState);
+    const [ids, setIds] = useState({});
 
-    const fetchData = async () => {
+    const fetchIds = async () => {
+        let key = params.filter.brand + params.filter.price + params.filter.product + "";
+        if ((key in ids) && (ids[key].length > params.pagination.page * LIMIT)) {
+            return ids[key].slice(params.pagination.page*LIMIT, params.pagination.page*LIMIT + LIMIT);
+        }
+        
         const filter = new Map();
         
         if (params.filter.brand.trim().length > 0) {
@@ -19,27 +25,33 @@ export const useRequestData = () => {
             filter.set("product", params.filter.product.trim())
         }
         
-        let ids;
+        let receivedIds;
         if (filter.size > 0) {
-            ids = await fetchFilteredIds(filter);
+            receivedIds = await fetchFilteredIds(filter);
         } else {
             const idsSet = new Set();
             let offsetAccumulator = {error: params.pagination.offsetError};
-            ids = Array.from(await fetchIds(params.pagination.page * LIMIT + params.pagination.offsetError,
+            receivedIds = Array.from(await fetchUnfilteredIds(params.pagination.page * LIMIT + params.pagination.offsetError,
                                             LIMIT, LIMIT, idsSet, offsetAccumulator));
             if (offsetAccumulator.error > params.pagination.offsetError) {
                 dispatch({type: CHANGE_OFFSET_ERROR, payload: offsetAccumulator.error});
             }
         }
-        let set = new Set();
-        return (await fetchItems(ids)).filter(item => {
-            if (set.has(item.id)) return false;
-            set.add(item.id);
-            return true;
-        });
+
+        if (key in ids) {
+            setIds(prevState => {
+                return {
+                    [key]: prevState[key].concat(receivedIds)
+                }
+            })
+        } else {
+            setIds({[key]: receivedIds});
+        }
+        
+        return receivedIds.slice(0, LIMIT);
     }
 
-    const fetchIds = async (offset, requestLimit, LIMIT, receivedUniqueIds, offsetAccumulator) => {
+    const fetchUnfilteredIds = async (offset, requestLimit, LIMIT, receivedUniqueIds, offsetAccumulator) => {
         const body = JSON.stringify(
             {
                 action: "get_ids",
@@ -49,11 +61,16 @@ export const useRequestData = () => {
                 }
             }
         );
-        (await toRequest(body)).forEach(item => receivedUniqueIds.add(item));
+        const idsArr = await toRequest(body);
+        idsArr.forEach(item => receivedUniqueIds.add(item));
+        
+        if (idsArr < requestLimit) {
+            return receivedUniqueIds;
+        }
         
         if (receivedUniqueIds.size < LIMIT) {
             offsetAccumulator.error += (requestLimit - receivedUniqueIds.size);
-            await fetchIds(offset + receivedUniqueIds.size + 1, requestLimit - receivedUniqueIds.size,
+            await fetchUnfilteredIds(offset + receivedUniqueIds.size + 1, requestLimit - receivedUniqueIds.size,
                            LIMIT, receivedUniqueIds, offsetAccumulator);
         }
         
@@ -93,15 +110,6 @@ export const useRequestData = () => {
         return arrIds;
     }
     
-    const fetchItems = async (ids) => {
-        const body = JSON.stringify(
-            {
-                action: "get_items",
-                params: { ids }
-            }
-        );
-        return await toRequest(body);
-    }
 
-    return [params.pagination.page+1, params.filter, dispatch, fetchData]
+    return [params.pagination.page+1, params.filter, dispatch, fetchIds]
 }

@@ -16,10 +16,17 @@ const Filter = ({filter, dispatch}) => {
     }
 
     return (
-        <form onClick={handleClick}>
-            <input name="product" />
-            <input name="price" type="number" />
-            <input name="brand" />
+        <form onClick={handleClick} className='filter'>
+            <div>Фильтр</div>
+            <label htmlFor="filter-product">Название:</label>
+            <input id="filter-product" name="product" />
+
+            <label htmlFor="filter-price">Цена:</label>
+            <input id="filter-price" name="price" type="number" />
+
+            <label htmlFor="filter-brand">Бренд:</label>
+            <input id="filter-brand" name="brand" />
+
             <button>Применить</button>
         </form>
     )
