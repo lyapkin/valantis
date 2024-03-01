@@ -1,5 +1,5 @@
 import React from 'react'
-import { PAGE_NEXT, PAGE_PREV } from './reducers/requestParamsReducer';
+import { PAGE_NEXT, PAGE_PREV } from '../reducers/requestParamsReducer';
 
 const Pagination = ({page, dispatch}) => {
     const handleClick = (e) => {
@@ -18,10 +18,10 @@ const Pagination = ({page, dispatch}) => {
     }
     return (
         <div onClick={handleClick} className='pagination'>
-            <span>Страница: {page}</span>
+            <span className="pagination__page">Страница: {page}</span>
 
-            <button data-action="prev" disabled={page <= 1}>Пред.</button> 
-            <button data-action="next">След.</button>
+            <button className="pagination__button" data-action="prev" disabled={page <= 1}>Пред.</button> 
+            <button className="pagination__button" data-action="next">След.</button>
         </div>
     )
 }

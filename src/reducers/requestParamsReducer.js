@@ -1,8 +1,7 @@
-export const {FILTER, PAGE_NEXT, PAGE_PREV, CHANGE_OFFSET_ERROR} = {
+export const {FILTER, PAGE_NEXT, PAGE_PREV} = {
     FILTER: 0,
     PAGE_NEXT: 1,
-    PAGE_PREV: 2,
-    CHANGE_OFFSET_ERROR: 3
+    PAGE_PREV: 2
 }
 
 const requestParamsReducer = (state, action) => {
@@ -11,34 +10,17 @@ const requestParamsReducer = (state, action) => {
             return {
                 ...state,
                 filter: action.payload,
-                pagination: {
-                    page: 0,
-                    offsetError: 0
-                }
+                page: 0
             }
         case PAGE_NEXT:
             return {
                 ...state,
-                pagination: {
-                    ...state.pagination,
-                    page: state.pagination.page + 1
-                }
+                page: state.page + 1
             }
         case PAGE_PREV:
             return {
                 ...state,
-                pagination: {
-                    ...state.pagination,
-                    page: state.pagination.page - 1
-                }
-            }
-        case CHANGE_OFFSET_ERROR:
-            return {
-                ...state,
-                pagination: {
-                    ...state.pagination,
-                    offsetError: action.payload
-                }
+                page: state.page - 1
             }
     }
 }
@@ -51,8 +33,5 @@ export const requestParamsInitState = {
         price: null,
         brand: ""
     },
-    pagination: {
-        page: 0,
-        offsetError: 0
-    }
+    page: 0
 }

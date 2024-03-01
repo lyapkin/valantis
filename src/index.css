@@ -27,14 +27,34 @@ code {
 
 .products {
   flex-grow: 1;
+  padding: 15px;
+}
+.product {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 10px;
 }
 
-.filter {
-  box-shadow: 0 -20px 30px 0 ;
-  padding-bottom: 15px;
+
+.filter__field {
+  margin-right: 15px;
+}
+.filter__field-label {
+  padding-right: 5px;
 }
 
-.pagination {
-  box-shadow: 0 20px 30px 0 ;
-  padding: 15px 0;
+.pagination__page {
+  padding-right: 10px;
+}
+.pagination__button {
+  margin-right: 5px;
+}
+
+.header {
+  box-shadow: 0 -20px 30px 0;
+  padding: 15px;
+}
+.footer {
+  box-shadow: 0 20px 30px 0;
+  padding: 15px;
 }

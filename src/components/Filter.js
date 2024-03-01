@@ -1,5 +1,5 @@
 import React from 'react'
-import { FILTER } from './reducers/requestParamsReducer';
+import { FILTER } from '../reducers/requestParamsReducer';
 
 const Filter = ({filter, dispatch}) => {
 
@@ -18,14 +18,14 @@ const Filter = ({filter, dispatch}) => {
     return (
         <form onClick={handleClick} className='filter'>
             <div>Фильтр</div>
-            <label htmlFor="filter-product">Название:</label>
-            <input id="filter-product" name="product" />
+            <label className="filter__field-label" htmlFor="filter-product">Название:</label>
+            <input className="filter__field" id="filter-product" name="product" />
 
-            <label htmlFor="filter-price">Цена:</label>
-            <input id="filter-price" name="price" type="number" />
+            <label className="filter__field-label" htmlFor="filter-price">Цена:</label>
+            <input className="filter__field" id="filter-price" name="price" type="number" />
 
-            <label htmlFor="filter-brand">Бренд:</label>
-            <input id="filter-brand" name="brand" />
+            <label className="filter__field-label" htmlFor="filter-brand">Бренд:</label>
+            <input className="filter__field" id="filter-brand" name="brand" />
 
             <button>Применить</button>
         </form>
