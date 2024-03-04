@@ -1,7 +1,7 @@
 import React from 'react'
 import { PAGE_NEXT, PAGE_PREV } from '../reducers/requestParamsReducer';
 
-const Pagination = ({page, dispatch}) => {
+const Pagination = ({page, dispatch, nextPage}) => {
     const handleClick = (e) => {
         if (e.target.tagName !== "BUTTON") return;
 
@@ -16,12 +16,13 @@ const Pagination = ({page, dispatch}) => {
                 dispatch({type: PAGE_NEXT});
         }
     }
+
     return (
         <div onClick={handleClick} className='pagination'>
             <span className="pagination__page">Страница: {page}</span>
 
             <button className="pagination__button" data-action="prev" disabled={page <= 1}>Пред.</button> 
-            <button className="pagination__button" data-action="next">След.</button>
+            <button className="pagination__button" data-action="next" disabled={!nextPage}>След.</button>
         </div>
     )
 }

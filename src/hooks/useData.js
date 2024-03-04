@@ -1,17 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { LIMIT } from "../utils/const";
 import { fetchFilteredIds, fetchUnfilteredIds, toRequest } from "../services/requests";
+import idsReducer, { PUSH_IDS, SET_IDS, idsInitState } from "../reducers/idsReducer";
 
 const useData = (page, productFilter) => {
-    const [ids, setIds] = useState({});
+    const keyRef = useRef(productFilter.brand + productFilter.price + productFilter.product + "");
+    const [ids, dispatch] = useReducer(idsReducer, idsInitState);
+    const [allData, setAllData] = useState(false);
     const [productList, setProductList] = useState([]);
     const [offsetError, setOffsetError] = useState(0);
 
     const [loading, setLoading] = useState(false);
-
+    
     const fetchIds = async () => {
-        let key = productFilter.brand + productFilter.price + productFilter.product + "";
-        if ((key in ids) && (ids[key].length > page * LIMIT)) {
+        const key = productFilter.brand + productFilter.price + productFilter.product + "";
+        if ((key in ids) && ( (ids[key].length-LIMIT > page * LIMIT) || allData )) {
             return ids[key].slice(page*LIMIT, page*LIMIT + LIMIT);
         }
         
@@ -21,36 +24,45 @@ const useData = (page, productFilter) => {
             filter.set("brand", productFilter.brand.trim())
         }
         if (productFilter.price > 0) {
-            filter.set("price", productFilter.price)
+            filter.set("price", Number(productFilter.price))
         }
         if (productFilter.product.trim().length > 0) {
             filter.set("product", productFilter.product.trim())
         }
         
-        let receivedIds;
+        let receivedData;
         if (filter.size > 0) {
-            receivedIds = await fetchFilteredIds(filter);
+            receivedData = await fetchFilteredIds(filter);
         } else {
+            let limit = LIMIT;
+            let offset = page * LIMIT + offsetError + 50;
+            if (page === 0) {
+                limit *= 2;
+                offset -= 50;
+            }
             const idsSet = new Set();
             let offsetAccumulator = {error: offsetError};
-            receivedIds = Array.from(await fetchUnfilteredIds(page * LIMIT + offsetError,
-                                            LIMIT, LIMIT, idsSet, offsetAccumulator));
+            receivedData = await fetchUnfilteredIds(offset, limit, limit, 
+                                                    idsSet, offsetAccumulator);
             if (offsetAccumulator.error > offsetError) {
                 setOffsetError(offsetAccumulator.error);
             }
         }
+        
+        if (allData !== receivedData.allData) {
+            setAllData(receivedData.allData);
+        }
 
         if (key in ids) {
-            setIds(prevState => {
-                return {
-                    [key]: prevState[key].concat(receivedIds)
-                }
-            })
+            dispatch({type: PUSH_IDS, payload: {[key]: receivedData.ids}});
         } else {
-            setIds({[key]: receivedIds});
+            dispatch({type: SET_IDS, payload: {[key]:receivedData.ids}});
+            keyRef.current = key;
         }
+
+        const result = (page === 0) ? receivedData.ids : ids[key];
         
-        return receivedIds.slice(0, LIMIT);
+        return result.slice(page*LIMIT, page*LIMIT + LIMIT);
     }
 
     const fetchProducts = async (ids) => {
@@ -72,7 +84,7 @@ const useData = (page, productFilter) => {
     }
 
     useEffect(() => {
-        setOffsetError(0)
+        setOffsetError(0);
     }, [productFilter]);
 
     useEffect(() => {
@@ -82,7 +94,7 @@ const useData = (page, productFilter) => {
             setLoading(true);
 
             const ids = await fetchIds();
-
+            
             timeout = setTimeout(async () => {
                 const products = await fetchProducts(ids);
 
@@ -100,7 +112,9 @@ const useData = (page, productFilter) => {
         };
     }, [page, productFilter]);
 
-    return [productList, loading];
+    const thereIsNextPage = keyRef.current in ids && page*LIMIT+LIMIT < ids[keyRef.current].length;
+
+    return [productList, loading, thereIsNextPage];
 }
 
 export default useData;

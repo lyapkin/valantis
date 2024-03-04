@@ -6,10 +6,9 @@ const Filter = ({filter, dispatch}) => {
     const handleClick = (e) => {
         e.preventDefault()
         if (e.target.tagName !== "BUTTON") return;
-
         const form = e.currentTarget
         const product = form.elements.product.value;
-        const price = Number(form.elements.price.value);
+        const price = form.elements.price.value;
         const brand = form.elements.brand.value;
         
         dispatch({type: FILTER, payload: {product, price, brand}})

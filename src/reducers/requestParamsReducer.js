@@ -30,7 +30,7 @@ export default requestParamsReducer;
 export const requestParamsInitState = {
     filter: {
         product: "",
-        price: null,
+        price: "",
         brand: ""
     },
     page: 0

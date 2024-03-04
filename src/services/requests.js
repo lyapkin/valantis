@@ -31,16 +31,16 @@ export const fetchUnfilteredIds = async (offset, requestLimit, LIMIT, receivedUn
     idsArr.forEach(item => receivedUniqueIds.add(item));
     
     if (idsArr < requestLimit) {
-        return receivedUniqueIds;
+        return {ids: Array.from(receivedUniqueIds), allData: true};
     }
     
     if (receivedUniqueIds.size < LIMIT) {
         offsetAccumulator.error += (requestLimit - receivedUniqueIds.size);
-        await fetchUnfilteredIds(offset + receivedUniqueIds.size + 1, requestLimit - receivedUniqueIds.size,
+        return await fetchUnfilteredIds(offset + receivedUniqueIds.size + 1, Math.abs(requestLimit - receivedUniqueIds.size),
                        LIMIT, receivedUniqueIds, offsetAccumulator);
     }
     
-    return receivedUniqueIds;
+    return {ids: Array.from(receivedUniqueIds), allData: false};
 }
 
 export const fetchFilteredIds = async (filter) => {
@@ -73,5 +73,5 @@ export const fetchFilteredIds = async (filter) => {
     idsMap.forEach((value, key) => {
         if (value === filter.size) arrIds.push(key)
     });
-    return arrIds;
+    return {ids: arrIds, allData: true};
 }
