@@ -2,7 +2,7 @@ import { getAuth } from '../utils/util';
 
 
 export const toRequest = async body => {
-    const response = await fetch("http://api.valantis.store:40000/", {
+    const response = await fetch("https://api.valantis.store:41000/", {
         headers: {
             "X-Auth": getAuth(),
             "Content-Type": "application/json"
